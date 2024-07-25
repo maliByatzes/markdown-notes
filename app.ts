@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { FileService } from "./services/file.service";
 import { bodyLimit } from "hono/body-limit";
+import { marked } from "marked";
 
 const app = new Hono();
 
@@ -59,9 +60,10 @@ app.get("/file/:id", async (c) => {
       return c.notFound();
     }
 
-    c.header('Content-Type', file.contentType);
-    c.header('Content-Disposition', `attachment; filename="${file.fileName}"`);
-    return c.body(file.data);
+    const html = marked(file.data.toString());
+
+    c.header('Content-Type', 'text/html')
+    return c.html(html);
   } catch (err: any) {
     console.error(`Error in get file route: ${err.message}`);
     return c.json({ error: "Internal Server Error" }, 500);

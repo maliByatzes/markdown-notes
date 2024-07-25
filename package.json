@@ -17,6 +17,7 @@
     "@types/mongoose": "^5.11.97",
     "dotenv": "^16.4.5",
     "hono": "^4.5.1",
+    "marked": "^13.0.2",
     "mongoose": "^8.5.1"
   }
 }
