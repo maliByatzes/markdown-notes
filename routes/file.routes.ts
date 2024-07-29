@@ -2,8 +2,15 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { marked } from "marked";
 import { FileService } from "../services/file.service";
+import { z } from "zod";
+import { zValidator } from "@hono/zod-validator";
+import { lintMarkdown } from "../utils/lintMakrdown";
 
 const fileRoutes = new Hono();
+
+const saveNoteSchema = z.object({
+  note: z.string()
+}).required();
 
 let fileService: FileService;
 
@@ -64,6 +71,33 @@ fileRoutes.get("/:id", async (c) => {
     return c.notFound();
   } catch (err: any) {
     console.error(`Error in get file route: ${err.message}`);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+});
+
+fileRoutes.post("/save/:id", zValidator("json", saveNoteSchema), async (c) => {
+  const fileId = c.req.param("id");
+  const { note } = c.req.valid("json");
+
+  try {
+    let file = await fileService.getFile(fileId);
+    if (!file) {
+      return c.notFound();
+    }
+
+    if (file.data) {
+      let newData = Buffer.concat([file.data, Buffer.from(note)]);
+      file.data = newData;
+      await file.save();
+
+      let html = await marked(newData.toString());
+      c.header('Content-Type', 'text/html');
+      return c.html(html);
+    }
+
+    return c.notFound();
+  } catch (err: any) {
+    console.error(`Error in save note route: ${err.message}`);
     return c.json({ error: "Internal Server Error" }, 500);
   }
 });

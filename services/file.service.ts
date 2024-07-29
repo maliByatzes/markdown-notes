@@ -21,11 +21,6 @@ export class FileService {
       return null;
     }
 
-    return {
-      fileName: file.fileName,
-      contentType: file.contentType,
-      length: file.length,
-      data: file.data
-    };
+    return file;
   }
 }

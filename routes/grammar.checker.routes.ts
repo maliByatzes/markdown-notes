@@ -25,7 +25,7 @@ grammarCheckerRoutes.post("/check/:id", async (c) => {
     if (file.data) {
       const markdownText = file.data.toString();
       const result = await lintMarkdown(markdownText);
-      return c.text(result, 200);
+      return c.json({ result }, 200);
     }
 
     return c.notFound();
